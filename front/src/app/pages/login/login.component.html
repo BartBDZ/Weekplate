@@ -1,0 +1,48 @@
+<div class="login-page">
+  <div class="login-card fade-in">
+    <div class="login-logo">
+      <div class="login-logo-name">week<span>plate</span></div>
+      <div class="login-logo-slogan">Gotuj z głową, jedz z rodziną</div>
+    </div>
+
+    <h2>Zaloguj się</h2>
+
+    <div class="field">
+      <label class="field-label">Email</label>
+      <input
+        pInputText
+        [(ngModel)]="email"
+        type="email"
+        placeholder="email@rodzina.pl"
+        class="w-full"
+        (keyup.enter)="signIn()"
+      />
+    </div>
+
+    <div class="field">
+      <label class="field-label">Hasło</label>
+      <p-password
+        [(ngModel)]="password"
+        [feedback]="false"
+        [toggleMask]="true"
+        placeholder="••••••••"
+        styleClass="w-full"
+        inputStyleClass="w-full"
+        (keyup.enter)="signIn()"
+      />
+    </div>
+
+    @if (error()) {
+      <p-message severity="error" [text]="error()!" />
+    }
+
+    <p-button
+      label="Zaloguj się"
+      icon="pi pi-sign-in"
+      [loading]="loading()"
+      [disabled]="!email || !password"
+      (onClick)="signIn()"
+      styleClass="w-full"
+    />
+  </div>
+</div>

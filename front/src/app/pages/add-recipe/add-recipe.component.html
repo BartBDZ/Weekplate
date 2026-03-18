@@ -1,0 +1,277 @@
+@if (step() === 'url') {
+  <div class="url-step fade-in">
+    <div class="url-hero">
+      <div class="url-hero-icon">
+        <i class="pi pi-book"></i>
+      </div>
+      <h1>Dodaj przepis</h1>
+      <p>Wybierz sposób dodania przepisu.</p>
+    </div>
+
+    <div class="method-cards">
+      <!-- Opcja 1: URL -->
+      <div class="method-card" [class.method-card--active]="method() === 'url'" (click)="method.set('url')">
+        <div class="method-card-icon"><i class="pi pi-link"></i></div>
+        <div>
+          <div class="method-card-title">Wczytaj z linku</div>
+          <div class="method-card-desc">AI automatycznie wyciągnie składniki, instrukcje i tagi.</div>
+        </div>
+      </div>
+
+      <!-- Opcja 2: Ręcznie -->
+      <div class="method-card" [class.method-card--active]="method() === 'manual'" (click)="method.set('manual')">
+        <div class="method-card-icon"><i class="pi pi-pencil"></i></div>
+        <div>
+          <div class="method-card-title">Dodaj ręcznie</div>
+          <div class="method-card-desc">Wpisz nazwę, składniki i instrukcje samodzielnie.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="method-panel">
+      @if (method() === 'url') {
+        <div class="url-card">
+          <label class="field-label">Link do przepisu</label>
+          <div class="url-input-row">
+            <input
+              pInputText
+              [(ngModel)]="url"
+              placeholder="https://www.kwestiasmaku.com/..."
+              class="url-input"
+              (keyup.enter)="parseUrl()"
+              [disabled]="loading()"
+            />
+            <p-button
+              label="Wczytaj"
+              icon="pi pi-arrow-right"
+              iconPos="right"
+              [loading]="loading()"
+              (onClick)="parseUrl()"
+              [disabled]="!url.trim()"
+            />
+          </div>
+
+          <div class="url-hints">
+            <span>Obsługiwane strony:</span>
+            <span class="hint-badge">kwestiasmaku.com</span>
+            <span class="hint-badge">przepisy.pl</span>
+            <span class="hint-badge">aniagotuje.pl</span>
+            <span class="hint-badge">i inne...</span>
+          </div>
+        </div>
+      }
+
+      @if (method() === 'manual') {
+        <div class="url-card">
+          <p-button
+            label="Przejdź do formularza"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            (onClick)="goManual()"
+            styleClass="w-full"
+          />
+        </div>
+      }
+    </div>
+  </div>
+}
+
+@if (loading()) {
+  <div class="parse-overlay">
+    <div class="parse-overlay-box">
+      <p-progressspinner strokeWidth="3" [style]="{ width: '52px', height: '52px' }" />
+      <span>Pobieram i analizuję przepis...</span>
+    </div>
+  </div>
+}
+
+@if (saving()) {
+  <div class="parse-overlay">
+    <div class="parse-overlay-box">
+      <p-progressspinner strokeWidth="3" [style]="{ width: '52px', height: '52px' }" />
+      <span>Zapisuję przepis...</span>
+    </div>
+  </div>
+}
+
+@if (step() === 'edit') {
+  <div class="edit-step fade-in">
+    <div class="edit-topbar">
+      <div>
+        <h1>Sprawdź i zapisz</h1>
+        @if (parseSource() === 'schema') {
+          <span class="subtitle-badge">
+            <i class="pi pi-check-circle"></i> Dane pobrane ze struktury strony
+          </span>
+        } @else if (parseSource() === 'ai') {
+          <span class="subtitle-badge">
+            <i class="pi pi-sparkles"></i> Dane wyciągnięte przez AI
+          </span>
+        } @else {
+          <span class="subtitle-badge">
+            <i class="pi pi-pencil"></i> Przepis dodawany ręcznie
+          </span>
+        }
+      </div>
+      <div class="edit-actions">
+        <p-button label="Wróć" variant="outlined" icon="pi pi-arrow-left" size="small" (onClick)="goBack()" />
+        <p-button
+          label="Zapisz przepis"
+          icon="pi pi-check"
+          size="small"
+          [loading]="saving()"
+          (onClick)="save()"
+          [disabled]="!name.trim()"
+        />
+      </div>
+    </div>
+
+    <div class="edit-grid">
+      <!-- Lewa kolumna: zdjęcie, czas, tagi -->
+      <div class="edit-sidebar">
+        <div class="form-card">
+          <label class="field-label">Zdjęcie przepisu</label>
+          <div class="image-preview-area">
+            @if (image_url) {
+              <img [src]="image_url" alt="Zdjęcie przepisu" class="recipe-image-preview" />
+            } @else {
+              <div class="image-placeholder">
+                <i class="pi pi-image"></i>
+                <span>Brak zdjęcia</span>
+              </div>
+            }
+          </div>
+          <input
+            pInputText
+            [(ngModel)]="image_url"
+            placeholder="URL zdjęcia (opcjonalnie)..."
+            class="w-full"
+          />
+        </div>
+
+        <div class="form-card">
+          <div class="field">
+            <label class="field-label">Czas przygotowania</label>
+            <div class="input-with-unit">
+              <p-inputnumber [(ngModel)]="prep_minutes" [min]="1" [max]="999" placeholder="30" class="w-full" />
+              <span class="unit-label">min</span>
+            </div>
+          </div>
+          <div class="field" style="margin-top: 1.25rem;">
+            <label class="field-label">Liczba porcji</label>
+            <div class="input-with-unit">
+              <p-inputnumber [(ngModel)]="servings" [min]="1" [max]="99" placeholder="4" class="w-full" />
+              <span class="unit-label">os.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <label class="field-label">Tagi</label>
+          <div class="tags-list">
+            @for (tag of tags; track tag) {
+              <span class="editable-tag">
+                {{ tag }}
+                <button (click)="removeTag(tag)"><i class="pi pi-times"></i></button>
+              </span>
+            }
+          </div>
+          <div class="tag-add-row">
+            <input
+              pInputText
+              [(ngModel)]="newTag"
+              placeholder="Dodaj tag..."
+              (keyup.enter)="addTag()"
+              class="tag-input"
+            />
+            <p-button icon="pi pi-plus" variant="outlined" size="small" (onClick)="addTag()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Prawa kolumna: nazwa, składniki, instrukcje -->
+      <div class="edit-main">
+        <div class="form-card">
+          <div class="field">
+            <label class="field-label">Nazwa przepisu *</label>
+            <input pInputText [(ngModel)]="name" placeholder="Np. Chili con carne" class="w-full input-lg" />
+          </div>
+        </div>
+
+        <div class="form-card">
+          <label class="field-label">Składniki ({{ ingredients.length }})</label>
+          <div class="ingredients-list">
+            @for (ing of ingredients; track $index) {
+              <div class="ingredient-row">
+                <i class="pi pi-circle-fill ingredient-dot"></i>
+                <span>{{ formatIngredient(ing) }}</span>
+                <button class="remove-btn" (click)="removeIngredient($index)">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            }
+          </div>
+          <div class="ingredient-add-row">
+            <input
+              pInputText
+              [(ngModel)]="newIngredient"
+              placeholder="Dodaj składnik i naciśnij Enter..."
+              (keyup.enter)="addIngredient()"
+              class="ingredient-input"
+            />
+            <p-button icon="pi pi-plus" variant="outlined" size="small" (onClick)="addIngredient()" />
+          </div>
+        </div>
+
+        <div class="form-card">
+          <div class="sections-header">
+            <label class="field-label">Instrukcje</label>
+            <p-button icon="pi pi-plus" label="Dodaj sekcję" variant="outlined" size="small" (onClick)="addSection()" />
+          </div>
+
+          @for (section of sections; track $index; let si = $index) {
+            <div class="section-block">
+              <div class="section-title-row">
+                <input
+                  pInputText
+                  [ngModel]="section.name"
+                  (ngModelChange)="updateSectionName(si, $event)"
+                  placeholder="Nazwa sekcji (opcjonalnie, np. Sos, Ciasto...)"
+                  class="section-name-input"
+                />
+                @if (sections.length > 1) {
+                  <button class="remove-btn section-remove-btn" (click)="removeSection(si)">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                }
+              </div>
+
+              <div class="steps-edit-list">
+                @for (step of section.steps; track $index; let ki = $index) {
+                  <div class="step-edit-row">
+                    <span class="step-num">{{ ki + 1 }}</span>
+                    <input
+                      pInputText
+                      [ngModel]="step"
+                      (ngModelChange)="updateStep(si, ki, $event)"
+                      placeholder="Opisz krok..."
+                      class="step-input"
+                      (keyup.enter)="addStep(si)"
+                    />
+                    @if (section.steps.length > 1) {
+                      <button class="remove-btn" (click)="removeStep(si, ki)">
+                        <i class="pi pi-times"></i>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+
+              <p-button icon="pi pi-plus" label="Dodaj krok" variant="text" size="small" (onClick)="addStep(si)" styleClass="mt-1" />
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

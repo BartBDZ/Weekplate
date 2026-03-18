@@ -1,0 +1,382 @@
+@import "primeicons/primeicons.css";
+@import "primeflex/primeflex.css";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+}
+
+/* Animacje globalne */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.35s ease both;
+}
+
+.slide-in {
+  animation: slideInLeft 0.35s ease both;
+}
+
+/* Staggered list items */
+.stagger > *:nth-child(1)  { animation-delay: 0.05s; }
+.stagger > *:nth-child(2)  { animation-delay: 0.10s; }
+.stagger > *:nth-child(3)  { animation-delay: 0.15s; }
+.stagger > *:nth-child(4)  { animation-delay: 0.20s; }
+.stagger > *:nth-child(5)  { animation-delay: 0.25s; }
+.stagger > *:nth-child(6)  { animation-delay: 0.30s; }
+.stagger > *:nth-child(7)  { animation-delay: 0.35s; }
+.stagger > *:nth-child(8)  { animation-delay: 0.40s; }
+
+/* Layout */
+.layout {
+  display: flex;
+  min-height: 100dvh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--p-surface-card);
+  border-right: 1px solid var(--p-surface-border);
+  padding: 1.5rem 1rem;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  transition: background 0.3s ease;
+
+  .sidebar-logo {
+    padding: 1rem 0.75rem;
+    margin-bottom: 1.25rem;
+    text-align: center;
+    background: var(--p-surface-section);
+    border: 1px solid var(--p-surface-border);
+    border-radius: 12px;
+
+    .sidebar-logo-img {
+      width: 100%;
+      max-width: 160px;
+      height: auto;
+      display: block;
+      margin: 0 auto 0.25rem;
+    }
+
+    .sidebar-logo-slogan {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--p-text-muted-color);
+      letter-spacing: 0.03em;
+      margin-top: 0.35rem;
+    }
+  }
+}
+
+.sidebar-separator {
+  height: 1px;
+  background: var(--p-surface-border);
+  margin: 0 0 1rem;
+  flex-shrink: 0;
+}
+
+// Przycisk "Dodaj przepis" — pełna szerokość
+.sidebar-add-btn {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+  display: block;
+
+  .p-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 0.75rem;
+  border-radius: 8px;
+  color: var(--p-text-color);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  i {
+    font-size: 1rem;
+    width: 1.25rem;
+    text-align: center;
+    color: var(--p-text-muted-color);
+    transition: color 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--p-surface-section);
+    color: var(--p-primary-color);
+
+    i { color: var(--p-primary-color); }
+  }
+
+  &.active {
+    background: var(--p-primary-50);
+    color: var(--p-primary-color);
+    font-weight: 700;
+    box-shadow: inset 3px 0 0 var(--p-primary-color);
+
+    i { color: var(--p-primary-color); }
+  }
+}
+
+.dark .nav-item.active {
+  background: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
+}
+
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid var(--p-surface-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.25rem;
+
+  .sidebar-user-icon {
+    font-size: 0.85rem;
+    color: var(--p-text-muted-color);
+    flex-shrink: 0;
+  }
+
+  .sidebar-user-email {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.sidebar-footer-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* App loading screen */
+.app-loading {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--p-surface-ground);
+
+  .app-loading-logo {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--p-primary-color);
+    letter-spacing: -0.5px;
+
+    span { color: var(--wp-yellow); }
+  }
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 2rem 2.5rem;
+  min-width: 0;
+  background: var(--p-surface-ground);
+  /* Wymusza block layout na wszystkich komponentach Angular */
+  > * { display: block; }
+}
+
+/* Wrapper strony — jeden dla wszystkich widoków */
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--p-surface-border);
+
+    .sidebar-logo {
+      margin-bottom: 0;
+      margin-right: auto;
+    }
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex: unset;
+    gap: 0.75rem;
+
+    .nav-item span { display: none; }
+  }
+
+  .sidebar-footer {
+    padding-top: 0;
+    border-top: none;
+    padding-left: 0.5rem;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+/* Żółty akcent — custom token */
+:root {
+  --wp-yellow: #f59e0b;
+  --wp-yellow-light: #fef3c7;
+}
+
+.dark {
+  --wp-yellow: #fbbf24;
+  --wp-yellow-light: #451a03;
+}
+
+/* Sidebar — wyraźnie oddzielony od treści */
+.sidebar {
+  background: linear-gradient(180deg, var(--p-surface-card) 0%, var(--p-surface-section) 100%) !important;
+  border-right: 2px solid var(--p-surface-border) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Wspólny badge z licznikiem */
+.count-badge {
+  background: color-mix(in srgb, #8b5cf6 12%, transparent);
+  color: #8b5cf6;
+  border: 1px solid color-mix(in srgb, #8b5cf6 30%, transparent);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* Wspólny header stron (Przepisy / Plan posiłków / Lista zakupów) */
+.page-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 16px;
+  padding: 1.25rem 1.75rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  h1 {
+    font-size: 1.4rem;
+    line-height: 1.1;
+    border-left: 4px solid var(--wp-yellow);
+    padding-left: 0.75rem;
+  }
+}
+
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Mniejsze przyciski globalnie */
+:root {
+  --p-button-padding-y: 0.35rem;
+  --p-button-padding-x: 0.75rem;
+  --p-button-font-size: 0.8rem;
+  --p-button-sm-padding-y: 0.25rem;
+  --p-button-sm-padding-x: 0.55rem;
+  --p-button-sm-font-size: 0.75rem;
+  --p-button-icon-only-width: 2rem;
+}
+
+.p-button {
+  font-size: 0.8rem !important;
+  padding: 0.35rem 0.75rem !important;
+}
+
+.p-button.p-button-sm,
+.p-button[ng-reflect-size="small"] {
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.55rem !important;
+}
+
+.p-button.p-button-icon-only {
+  width: 2rem !important;
+  height: 2rem !important;
+  padding: 0 !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--p-surface-border);
+  border-radius: 99px;
+  &:hover { background: var(--p-text-muted-color); }
+}
+

@@ -1,0 +1,74 @@
+<p-toast />
+
+@if (!auth.initialized()) {
+  <div class="app-loading">
+    <div class="app-loading-logo">week<span>plate</span></div>
+  </div>
+} @else if (auth.user()) {
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="/weekplate.png" alt="Weekplate" class="sidebar-logo-img" />
+        <div class="sidebar-logo-slogan">Gotuj z głową, jedz z rodziną</div>
+      </div>
+
+      <div class="sidebar-separator"></div>
+
+      <p-button
+        label="Dodaj przepis"
+        icon="pi pi-plus"
+        routerLink="/recipes/add"
+        styleClass="sidebar-add-btn"
+      />
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" routerLink="/welcome" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <i class="pi pi-home"></i>
+          <span>Strona główna</span>
+        </a>
+        <a class="nav-item" routerLink="/recipes" routerLinkActive="active">
+          <i class="pi pi-book"></i>
+          <span>Przepisy</span>
+        </a>
+        <a class="nav-item" routerLink="/planner" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <i class="pi pi-calendar"></i>
+          <span>Plan posiłków</span>
+        </a>
+          <a class="nav-item" routerLink="/shopping" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <i class="pi pi-shopping-cart"></i>
+          <span>Lista zakupów</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <i class="pi pi-user sidebar-user-icon"></i>
+          <span class="sidebar-user-email">{{ auth.user()!.email }}</span>
+        </div>
+        <div class="sidebar-footer-actions">
+          <p-button
+            [icon]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"
+            variant="text"
+            [rounded]="true"
+            (onClick)="toggleTheme()"
+            [ariaLabel]="isDark() ? 'Tryb jasny' : 'Tryb ciemny'"
+          />
+          <p-button
+            icon="pi pi-sign-out"
+            variant="text"
+            [rounded]="true"
+            (onClick)="auth.signOut()"
+            ariaLabel="Wyloguj"
+            severity="secondary"
+          />
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <router-outlet />
+    </main>
+  </div>
+} @else {
+  <router-outlet />
+}

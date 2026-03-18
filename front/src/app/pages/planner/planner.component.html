@@ -1,0 +1,287 @@
+<p-toast />
+
+<div class="planner-page">
+
+  <!-- Header -->
+  <div class="page-header-card">
+    <div class="page-header-title">
+      <h1>Plan posiłków</h1>
+      <div class="week-nav">
+        <p-button icon="pi pi-chevron-left" severity="secondary" [rounded]="true" [text]="true" (onClick)="prevWeek()" pTooltip="Poprzedni tydzień" />
+        <span class="week-label">{{ weekLabel }}</span>
+        <p-button icon="pi pi-chevron-right" severity="secondary" [rounded]="true" [text]="true" (onClick)="nextWeek()" pTooltip="Następny tydzień" />
+      </div>
+    </div>
+    <div class="page-header-actions">
+      <p-button label="Dziś" severity="secondary" [outlined]="true" (onClick)="goToday()" />
+      <p-button label="Lista zakupów" icon="pi pi-shopping-cart" [routerLink]="['/shopping']" [queryParams]="{ planId: plan()?.id }" />
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-value">{{ totalMeals() }}</span>
+      <span class="stat-label">{{ totalMeals() === 1 ? 'danie' : totalMeals() < 5 ? 'dania' : 'dań' }}</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+      <span class="stat-value">{{ filledDaysCount() }}</span>
+      <span class="stat-label">z 7 dni</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+      <span class="stat-value">{{ ingredientCount() }}</span>
+      <span class="stat-label">składników</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="week-dots">
+      @for (day of weekDays(); track day.toISOString()) {
+        <div
+          class="week-dot"
+          [class.filled]="ingredientDayFilled(day)"
+          [class.today]="isToday(day)"
+          [pTooltip]="day.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric' })"
+        ></div>
+      }
+    </div>
+  </div>
+
+  <!-- Quick add hint -->
+  <div class="quick-hint-wrap" [class.quick-hint-wrap--visible]="quickAddRecipe() !== null">
+    @if (quickAddRecipe()) {
+      <div class="quick-hint">
+        <i class="pi pi-hand-pointer"></i>
+        Wybrano: <strong>{{ quickAddRecipe()!.name }}</strong> — kliknij dzień, aby dodać
+        <button class="quick-hint-cancel" (click)="quickAddRecipe.set(null)">
+          <i class="pi pi-times"></i> Anuluj
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Calendar -->
+  <div
+    class="calendar-wrap"
+    [class.is-dragging]="dragItem() !== null || dragRecipe() !== null"
+    [class.is-resizing]="resizingItem() !== null"
+    (dragleave)="onGridDragLeave($event)"
+  >
+    @if (loading()) {
+      <div class="calendar-loading">
+        <i class="pi pi-spin pi-spinner"></i>
+      </div>
+    }
+
+    <div class="calendar-grid" [style.grid-template-rows]="gridTemplateRows()">
+
+      <!-- Row 1: Day headers -->
+      @for (day of weekDays(); track day.toISOString(); let i = $index) {
+        <div
+          class="day-header-cell"
+          [class.today]="isToday(day)"
+          [class.past]="isPast(day)"
+          [style.grid-column]="i + 1"
+          style="grid-row: 1"
+        >
+          @if (i === 0) {
+            <button class="cal-day-nav-btn" (click)="$event.stopPropagation(); prevDay()" pTooltip="Poprzedni dzień" tooltipPosition="right">
+              <i class="pi pi-chevron-left"></i>
+            </button>
+          }
+          <div class="day-header-inner">
+            <span class="day-name">{{ dayName(day) }}</span>
+            <span class="day-num" [class.today-num]="isToday(day)">{{ dayLabel(day) }}</span>
+          </div>
+          @if (i === 6) {
+            <button class="cal-day-nav-btn" (click)="$event.stopPropagation(); nextDay()" pTooltip="Następny dzień" tooltipPosition="left">
+              <i class="pi pi-chevron-right"></i>
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Background day columns (drop targets) -->
+      @for (day of weekDays(); track day.toISOString(); let i = $index) {
+        <div
+          class="day-bg"
+          [class.today]="isToday(day)"
+          [class.past]="isPast(day)"
+          [class.drag-over]="isDragOverCol(i)"
+          [style.grid-column]="i + 1"
+          [style.grid-row]="'2 / ' + addButtonGridRow()"
+          (click)="onDayClick(day)"
+          (dragover)="onGridDragOver($event, day, i)"
+          (drop)="onDayDrop($event, day)"
+        ></div>
+      }
+
+      <!-- Event items (span across columns for multi-day) -->
+      @for (entry of eventsWithPlacement(); track entry.item.id) {
+        <div
+          class="event-item"
+          [class.event-resizing]="resizingItem()?.id === entry.item.id"
+          [style.grid-column]="(entry.col + 1) + ' / span ' + entry.span"
+          [style.grid-row]="entry.row + 2"
+          [draggable]="!resizingItem()"
+          (dragstart)="onMealDragStart($event, entry.item)"
+          (dragend)="onDragEnd()"
+          (dragover)="onGridDragOver($event, weekDays()[entry.col], entry.col)"
+          (drop)="onDayDrop($event, weekDays()[entry.col])"
+          (click)="$event.stopPropagation()"
+        >
+          @if (entry.item.recipe?.image_url) {
+            <img [src]="entry.item.recipe!.image_url!" class="event-img" [alt]="entry.item.recipe!.name" />
+          } @else {
+            <div class="event-img event-img--placeholder">
+              <i class="pi pi-book"></i>
+            </div>
+          }
+          <span class="event-name">{{ entry.item.recipe?.name }}</span>
+          <button
+            class="event-remove"
+            (click)="$event.stopPropagation(); removeItem(entry.item.id, entry.item.recipe_id)"
+            pTooltip="Usuń"
+            tooltipPosition="top"
+          >
+            <i class="pi pi-times"></i>
+          </button>
+          <div
+            class="event-resize-handle"
+            (mousedown)="startResize($event, entry.item)"
+            (click)="$event.stopPropagation()"
+            pTooltip="Przeciągnij, aby zmienić czas trwania"
+            tooltipPosition="top"
+          ></div>
+        </div>
+      }
+
+      <!-- Add button row (last row) -->
+      @for (day of weekDays(); track day.toISOString(); let i = $index) {
+        <div
+          class="day-add-cell"
+          [style.grid-column]="i + 1"
+          [style.grid-row]="addButtonGridRow()"
+          (dragover)="onGridDragOver($event, day, i)"
+          (drop)="onDayDrop($event, day)"
+        >
+          @if (surpriseState()?.dateStr === toDateStr(day)) {
+            <!-- Surprise preview card -->
+            <div class="surprise-preview" (click)="$event.stopPropagation()">
+              <div class="surprise-card">
+                @if (surpriseState()!.recipe.image_url) {
+                  <img [src]="surpriseState()!.recipe.image_url" class="surprise-thumb" [alt]="surpriseState()!.recipe.name" />
+                } @else {
+                  <div class="surprise-thumb surprise-thumb--placeholder"><i class="pi pi-book"></i></div>
+                }
+                <span class="surprise-name">{{ surpriseState()!.recipe.name }}</span>
+              </div>
+              <div class="surprise-actions">
+                <button class="surprise-accept" (click)="$event.stopPropagation(); acceptSurprise()">
+                  <i class="pi pi-check"></i> Dodaj
+                </button>
+                <button class="surprise-icon-btn" (click)="$event.stopPropagation(); reshuffleSurprise()" pTooltip="Losuj ponownie" tooltipPosition="top">
+                  <i class="pi pi-refresh"></i>
+                </button>
+                <button class="surprise-icon-btn" (click)="$event.stopPropagation(); surpriseState.set(null)" pTooltip="Anuluj" tooltipPosition="top">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button class="day-add-btn" (click)="$event.stopPropagation(); onDayClick(day)">
+              <i class="pi pi-plus"></i>
+            </button>
+            @if (recentRecipes().length > 0) {
+              <button class="day-surprise-btn" (click)="$event.stopPropagation(); pickSurprise(day)" pTooltip="Losowe danie z ostatnich przepisów" tooltipPosition="top">
+                <i class="pi pi-bolt"></i> Zaskocz mnie
+              </button>
+            }
+          }
+        </div>
+      }
+
+    </div>
+  </div>
+
+  <!-- Bottom recipe sections -->
+  <div class="bottom-sections">
+
+    <div class="recipe-section">
+      <div class="recipe-section-header">
+        <i class="pi pi-history"></i>
+        <span>Ostatnie przepisy</span>
+        <span class="recipe-section-hint">Kliknij lub przeciągnij na dzień</span>
+      </div>
+      <div class="recipe-section-scroll">
+        @for (recipe of recentRecipes(); track recipe.id) {
+          <div
+            class="row-card"
+            [class.row-card--selected]="quickAddRecipe()?.id === recipe.id"
+            [draggable]="true"
+            (click)="onQuickAddSelect(recipe)"
+            (dragstart)="onRecipeDragStart($event, recipe)"
+            (dragend)="onDragEnd()"
+            [pTooltip]="recipe.name"
+            tooltipPosition="top"
+          >
+            @if (recipe.image_url) {
+              <img [src]="recipe.image_url" class="row-card-img" [alt]="recipe.name" />
+            } @else {
+              <div class="row-card-img row-card-img--placeholder"><i class="pi pi-book"></i></div>
+            }
+            <span class="row-card-name">{{ recipe.name }}</span>
+          </div>
+        }
+        @if (recentRecipes().length === 0) {
+          <div class="section-empty"><i class="pi pi-inbox"></i> Brak przepisów</div>
+        }
+      </div>
+    </div>
+
+    <div class="recipe-section">
+      <div class="recipe-section-header">
+        <i class="pi pi-heart-fill" style="color: #e53935"></i>
+        <span>Ulubione</span>
+        <span class="recipe-section-hint">Kliknij lub przeciągnij na dzień</span>
+      </div>
+      <div class="recipe-section-scroll">
+        @for (recipe of favoriteRecipes(); track recipe.id) {
+          <div
+            class="row-card"
+            [class.row-card--selected]="quickAddRecipe()?.id === recipe.id"
+            [draggable]="true"
+            (click)="onQuickAddSelect(recipe)"
+            (dragstart)="onRecipeDragStart($event, recipe)"
+            (dragend)="onDragEnd()"
+            [pTooltip]="recipe.name"
+            tooltipPosition="top"
+          >
+            @if (recipe.image_url) {
+              <img [src]="recipe.image_url" class="row-card-img" [alt]="recipe.name" />
+            } @else {
+              <div class="row-card-img row-card-img--placeholder"><i class="pi pi-book"></i></div>
+            }
+            <span class="row-card-name">{{ recipe.name }}</span>
+          </div>
+        }
+        @if (favoriteRecipes().length === 0) {
+          <div class="section-empty">
+            <i class="pi pi-heart"></i> Dodaj ulubione przepisy klikając serce na karcie przepisu
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Dialog -->
+<app-add-meal-dialog
+  [(visible)]="dialogVisible"
+  [planId]="plan()?.id ?? null"
+  [targetDate]="dialogTargetDate()"
+  [preSelectedRecipe]="dialogPreRecipe()"
+  (confirmed)="onMealConfirmed($event)"
+/>

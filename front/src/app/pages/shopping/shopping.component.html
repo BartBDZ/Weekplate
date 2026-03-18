@@ -1,0 +1,133 @@
+<p-toast />
+
+<div class="page-wrapper">
+  <!-- Nagłówek -->
+  <div class="page-header-card">
+    <div class="page-header-title">
+      <h1>Lista zakupów</h1>
+        @if (!loading() && ingredients().length > 0) {
+          <span class="count-badge">
+            {{ uncheckedCount }} / {{ ingredients().length }}
+          </span>
+        }
+    </div>
+    <div class="page-header-actions">
+      <p-button
+        label="Zaznacz wszystko"
+        icon="pi pi-check-square"
+        severity="secondary"
+        [text]="true"
+        (onClick)="checkAll()"
+      />
+      <p-button
+        label="Odznacz wszystko"
+        icon="pi pi-stop"
+        severity="secondary"
+        [text]="true"
+        (onClick)="uncheckAll()"
+      />
+      <p-button
+        label="Usuń kupione"
+        icon="pi pi-trash"
+        severity="danger"
+        [text]="true"
+        (onClick)="clearBought()"
+        pTooltip="Usuwa z widoku produkty które masz już kupione"
+      />
+      <p-button
+        icon="pi pi-home"
+        severity="secondary"
+        [text]="true"
+        routerLink="/welcome"
+        pTooltip="Strona główna"
+      />
+    </div>
+  </div>
+
+  <!-- Filtry -->
+  <div class="filters-bar">
+    <p-selectbutton
+      [options]="filterOptions"
+      [ngModel]="filterMode()"
+      (ngModelChange)="filterMode.set($event); onFilterChange()"
+      optionLabel="label"
+      optionValue="value"
+    />
+
+    @if (filterMode() === 'day') {
+      <div class="day-select">
+        <label>Dzień:</label>
+        <select
+          class="day-dropdown"
+          [ngModel]="selectedDay()"
+          (ngModelChange)="selectedDay.set($event); onDayChange()"
+        >
+          @for (opt of dayOptions(); track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    }
+  </div>
+
+  <!-- Lista składników -->
+  @if (loading()) {
+    <div class="loading-list">
+      @for (_ of [1,2,3,4,5,6]; track $index) {
+        <p-skeleton height="3.5rem" styleClass="mb-2" borderRadius="10px" />
+      }
+    </div>
+  } @else if (ingredients().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-shopping-cart"></i>
+      <h3>Lista zakupów jest pusta</h3>
+      <p>Dodaj dania do planera, aby automatycznie wygenerować listę zakupów.</p>
+      <p-button label="Przejdź do planera" icon="pi pi-calendar" [routerLink]="['/planner']" />
+    </div>
+  } @else {
+    <div class="ingredients-container">
+      @for (group of groupedIngredients; track group.category) {
+        <div class="category-group">
+          <div class="category-header">
+            <i [class]="categoryIcon(group.category)"></i>
+            <span>{{ group.category }}</span>
+            <span class="category-count">{{ group.items.length }}</span>
+          </div>
+
+          <div class="ingredient-cards">
+            @for (ing of group.items; track ing.ingredient_id) {
+              <div
+                class="ingredient-card"
+                [class.bought]="!ing.checked"
+                (click)="toggleIngredient(ing)"
+              >
+                <p-checkbox
+                  [ngModel]="ing.checked"
+                  [binary]="true"
+                  (onClick)="$event.stopPropagation()"
+                  (ngModelChange)="toggleIngredient(ing)"
+                />
+
+                <div class="ing-info">
+                  <span class="ing-name">{{ ing.name }}</span>
+                  @if (ing.sources.length > 0) {
+                    <span class="ing-sources">{{ ing.sources.join(', ') }}</span>
+                  }
+                </div>
+
+                @if (ing.total_quantity) {
+                  <div class="ing-qty">
+                    <span class="qty-value">{{ ing.total_quantity }}</span>
+                    @if (ing.unit) {
+                      <span class="qty-unit">{{ ing.unit | expandUnit: ing.total_quantity }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

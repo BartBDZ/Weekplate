@@ -1,0 +1,198 @@
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+
+  .date-label {
+    font-weight: 400;
+    color: var(--p-text-muted-color);
+    font-size: 0.9rem;
+    margin-left: 0.25rem;
+
+    &::before {
+      content: '—';
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+// Krok 1
+.step1 {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recipe-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+.recipe-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: 2px solid transparent;
+
+  &:hover {
+    background: var(--p-content-hover-background);
+  }
+
+  &.selected {
+    border-color: var(--p-primary-color);
+    background: var(--p-primary-50);
+  }
+}
+
+.recipe-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+
+  &.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--p-content-hover-background);
+    color: var(--p-text-muted-color);
+  }
+}
+
+.recipe-name {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.selected-icon {
+  color: var(--p-primary-color);
+  font-size: 1.1rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--p-text-muted-color);
+
+  i {
+    font-size: 2rem;
+  }
+}
+
+.duration-picker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  label {
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}
+
+.duration-buttons {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.duration-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 6px;
+  border: 2px solid var(--p-content-border-color);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--p-primary-color);
+    color: var(--p-primary-color);
+  }
+
+  &.active {
+    background: var(--p-primary-color);
+    border-color: var(--p-primary-color);
+    color: #fff;
+  }
+}
+
+// Krok 2
+.step2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.step2-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ingredients-list {
+  max-height: 340px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+}
+
+.ingredient-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--p-text-muted-color);
+}
+
+.ingredient-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover {
+    background: var(--p-content-hover-background);
+  }
+}
+
+.ing-name {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.ing-qty {
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+  font-weight: 500;
+}

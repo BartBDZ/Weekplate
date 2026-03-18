@@ -1,0 +1,166 @@
+@if (loading()) {
+  <div class="detail-loading">
+    <div class="skeleton-hero"></div>
+    <div class="skeleton-title"></div>
+  </div>
+} @else if (recipe()) {
+  <div class="detail-wrap fade-in">
+
+    <p-confirmdialog />
+
+    <!-- Hero image z przyciskiem wróć -->
+    <div class="detail-hero" [class.detail-hero--no-img]="!recipe()!.image_url">
+      @if (recipe()!.image_url) {
+        <img [src]="recipe()!.image_url" [alt]="recipe()!.name" class="detail-hero-img" />
+      }
+      <a class="hero-back-btn" routerLink="/recipes" ariaLabel="Wróć do przepisów">
+        <i class="pi pi-arrow-left"></i>
+      </a>
+    </div>
+
+    <!-- Name + meta -->
+    <div class="detail-header">
+      <div class="detail-name-row">
+        <h1 class="detail-name">{{ recipe()!.name }}</h1>
+        <span class="source-badge" [class]="'source-badge--' + (recipe()!.source_type ?? 'manual')">
+          @if (recipe()!.source_type === 'manual') {
+            <i class="pi pi-pencil"></i> Dodany ręcznie
+          } @else {
+            <i class="pi pi-sparkles"></i> Dodany przez AI
+          }
+        </span>
+      </div>
+
+      <div class="detail-meta">
+        <div class="meta-chips">
+          @if (recipe()!.prep_minutes) {
+            <div class="meta-chip">
+              <i class="pi pi-clock"></i>
+              <span>{{ recipe()!.prep_minutes }} min</span>
+            </div>
+          }
+          @if (recipe()!.servings) {
+            <div class="meta-chip">
+              <i class="pi pi-users"></i>
+              <span>{{ recipe()!.servings }} porcje</span>
+            </div>
+          }
+          @if (recipe()!.source_name) {
+            <div class="meta-chip">
+              <i class="pi pi-globe"></i>
+              <span>{{ recipe()!.source_name }}</span>
+            </div>
+          }
+        </div>
+        <div class="detail-meta-actions">
+          <button
+            class="detail-fav-btn"
+            [class.detail-fav-btn--active]="isFavorite()"
+            (click)="toggleFavorite()"
+            [attr.aria-label]="isFavorite() ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'"
+          >
+            <i [class]="isFavorite() ? 'pi pi-heart-fill' : 'pi pi-heart'"></i>
+            {{ isFavorite() ? 'Ulubione' : 'Dodaj do ulubionych' }}
+          </button>
+          @if (recipe()!.source_url) {
+            <a class="original-link" [href]="recipe()!.source_url" target="_blank" rel="noopener">
+              <i class="pi pi-external-link"></i>
+              Przepis
+            </a>
+          }
+        </div>
+      </div>
+
+      <div class="detail-rating">
+        <span class="rating-label">Ocena:</span>
+        <div class="stars">
+          @for (s of [1,2,3,4,5,6]; track s) {
+            <button
+              class="star-btn"
+              [class.active]="s <= (rating ?? 0)"
+              [class.hover]="s <= hoverRating"
+              (mouseenter)="hoverRating = s"
+              (mouseleave)="hoverRating = 0"
+              (click)="saveRating(s)"
+            >
+              <i class="pi pi-star-fill"></i>
+            </button>
+          }
+        </div>
+        @if (rating) {
+          <span class="rating-value">{{ rating }}/6</span>
+        }
+      </div>
+
+      @if (recipe()!.tags.length) {
+        <div class="detail-tags">
+          @for (tag of recipe()!.tags; track tag.id) {
+            <a class="detail-tag" [routerLink]="['/recipes']" [queryParams]="{ tag: tag.id }">{{ tag.name }}</a>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Content grid -->
+    <div class="detail-grid">
+
+      <!-- Składniki + akcje -->
+      <div class="ingredients-col">
+        <div class="detail-card">
+          <h2 class="section-title">
+            <i class="pi pi-list"></i>
+            Składniki
+            <span class="count-badge">{{ recipe()!.ingredients.length }}</span>
+          </h2>
+          <ul class="ingredients-list">
+            @for (ing of recipe()!.ingredients; track ing.name) {
+              <li class="ingredient-item">
+                <i class="pi pi-circle-fill dot"></i>
+                <span class="ing-name">{{ ing.name }}</span>
+                @if (ing.quantity || ing.unit) {
+                  <span class="ing-amount">
+                    {{ ing.quantity ?? '' }} {{ ing.unit | expandUnit: ing.quantity }}
+                  </span>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+        <p-button
+          label="Usuń przepis"
+          icon="pi pi-trash"
+          severity="danger"
+          variant="outlined"
+          [fluid]="true"
+          (onClick)="confirmDelete()"
+          [loading]="deleting()"
+        />
+      </div>
+
+      <!-- Instrukcje -->
+      <div class="detail-card instructions-card">
+        <h2 class="section-title">
+          <i class="pi pi-book"></i>
+          Instrukcje
+        </h2>
+        <div class="steps-list">
+          @for (line of instructionLines; track $index) {
+            @if (line.type === 'section') {
+              <div class="step-section">{{ line.text }}</div>
+            } @else {
+              <div class="step-item" [class.step-done]="completedSteps.has(line.index!)" (click)="toggleStep(line.index!)">
+                <div class="step-checkbox">
+                  @if (completedSteps.has(line.index!)) {
+                    <i class="pi pi-check"></i>
+                  }
+                </div>
+                <p class="step-text">{{ line.text }}</p>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

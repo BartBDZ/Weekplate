@@ -1,0 +1,137 @@
+<div class="page-wrapper">
+  <div class="page-header-card">
+    <div class="page-header-title">
+      <h1>Przepisy</h1>
+      <span class="count-badge">{{ recipes().length }}</span>
+    </div>
+    <div class="page-header-actions">
+      <p-button
+        label="Dodaj przepis"
+        icon="pi pi-plus"
+        routerLink="/recipes/add"
+      />
+      <p-button
+        icon="pi pi-home"
+        severity="secondary"
+        [text]="true"
+        routerLink="/welcome"
+        pTooltip="Strona główna"
+      />
+    </div>
+  </div>
+
+  <div class="recipes-toolbar">
+    <p-iconfield class="search-field">
+      <p-inputicon styleClass="pi pi-search" />
+      <input
+        pInputText
+        placeholder="Szukaj przepisu..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </p-iconfield>
+
+    @if (allTags().length) {
+      <div class="tag-filters-row">
+        <div class="tag-filters" [class.expanded]="tagsExpanded()">
+          @for (tag of allTags(); track tag.id) {
+            <button
+              class="tag-filter"
+              [class.active]="isTagSelected(tag.id)"
+              [style.--tag-color]="tag.color"
+              (click)="toggleTag(tag.id)"
+            >
+              {{ tag.name }}
+            </button>
+          }
+        </div>
+        @if (allTags().length > TAGS_VISIBLE_DEFAULT) {
+          <button class="tags-expand-btn" (click)="tagsExpanded.set(!tagsExpanded())">
+            @if (tagsExpanded()) {
+              <i class="pi pi-chevron-up"></i> Mniej
+            } @else {
+              <i class="pi pi-chevron-down"></i> Pokaż więcej
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="recipes-grid stagger">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="recipe-skeleton fade-in">
+          <p-skeleton height="180px" borderRadius="12px" />
+          <p-skeleton height="1.2rem" width="70%" styleClass="mt-3" />
+          <p-skeleton height="0.9rem" width="40%" styleClass="mt-2" />
+        </div>
+      }
+    </div>
+  } @else if (filtered.length === 0) {
+    <div class="empty-state fade-in">
+      <i class="pi pi-book"></i>
+      <h3>Brak przepisów</h3>
+      <p>Dodaj pierwszy przepis wklejając link do ulubionej strony.</p>
+      <p-button label="Dodaj przepis" icon="pi pi-plus" routerLink="/recipes/add" />
+    </div>
+  } @else {
+    <div class="recipes-grid stagger">
+      @for (recipe of filtered; track recipe.id) {
+        <a class="recipe-card fade-in" [routerLink]="['/recipes', recipe.id]">
+          <div class="recipe-card-image">
+            @if (recipe.image_url) {
+              <img [src]="recipe.image_url" [alt]="recipe.name" loading="lazy" />
+            } @else {
+              <div class="recipe-card-placeholder">
+                <i class="pi pi-image"></i>
+              </div>
+            }
+            <button
+              class="fav-btn"
+              [class.fav-btn--active]="isFavorite(recipe.id)"
+              (click)="toggleFavorite($event, recipe.id)"
+              [attr.aria-label]="isFavorite(recipe.id) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'"
+            >
+              <i [class]="isFavorite(recipe.id) ? 'pi pi-heart-fill' : 'pi pi-heart'"></i>
+            </button>
+          </div>
+          <div class="recipe-card-body">
+            <div class="recipe-card-source">
+              @if (recipe.source_name) {
+                <i class="pi pi-globe"></i> {{ recipe.source_name }}
+              } @else {
+                <i class="pi pi-pencil"></i> Dodany ręcznie
+              }
+            </div>
+            <h3 class="recipe-card-name">{{ recipe.name }}</h3>
+            <div class="recipe-card-spacer"></div>
+            <div class="recipe-card-meta">
+              @if (recipe.prep_minutes) {
+                <span><i class="pi pi-clock"></i> {{ recipe.prep_minutes }} min</span>
+              }
+              @if (recipe.servings) {
+                <span><i class="pi pi-users"></i> {{ recipe.servings }} porcji</span>
+              }
+            </div>
+            <div class="recipe-card-rating">
+              @for (s of [1,2,3,4,5,6]; track s) {
+                <i class="pi" [class.pi-star-fill]="s <= (recipe.rating ?? 0)" [class.pi-star]="s > (recipe.rating ?? 0)"></i>
+              }
+            </div>
+            @if (recipe.tags?.length) {
+              <div class="recipe-card-tags">
+                @for (tag of recipe.tags!.slice(0, 3); track tag.id) {
+                  <span class="recipe-tag">{{ tag.name }}</span>
+                }
+                @if (recipe.tags!.length > 3) {
+                  <span class="recipe-tag recipe-tag--more">+{{ recipe.tags!.length - 3 }} więcej</span>
+                }
+              </div>
+            }
+          </div>
+        </a>
+      }
+    </div>
+  }
+</div>

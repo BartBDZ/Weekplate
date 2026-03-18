@@ -1,0 +1,90 @@
+<div class="welcome-wrapper">
+  <!-- Hero -->
+  <div class="hero fade-in">
+    <img src="/logo.png" alt="Weekplate" class="hero-logo-img" />
+    <div class="hero-logo">week<span>plate</span></div>
+    <p class="hero-tagline">Gotuj z głową, jedz z rodziną</p>
+    <p class="hero-sub">Planuj posiłki, zarządzaj przepisami i rób zakupy — wszystko w jednym miejscu.</p>
+  </div>
+
+  <!-- Feature cards -->
+  <div class="features-grid stagger">
+    <div class="feature-card fade-in">
+      <div class="feature-icon">
+        <i class="pi pi-book"></i>
+      </div>
+      <div class="feature-body">
+        <h3>Baza przepisów</h3>
+        <p>Zbieraj ulubione przepisy z internetu lub dodawaj własne. Wystarczy wkleić link — resztą zajmuje się AI.</p>
+      </div>
+      <p-button
+        label="Przeglądaj przepisy"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        severity="secondary"
+        [outlined]="true"
+        routerLink="/recipes"
+      />
+    </div>
+
+    <div class="feature-card fade-in">
+      <div class="feature-icon feature-icon--yellow">
+        <i class="pi pi-calendar"></i>
+      </div>
+      <div class="feature-body">
+        <h3>Plan posiłków</h3>
+        <p>Zaplanuj jadłospis na cały tydzień. Przeciągaj dania, rozciągaj na kilka dni i nawiguj między tygodniami.</p>
+      </div>
+      <p-button
+        label="Otwórz planer"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        severity="secondary"
+        [outlined]="true"
+        routerLink="/planner"
+      />
+    </div>
+
+    <div class="feature-card fade-in">
+      <div class="feature-icon feature-icon--green">
+        <i class="pi pi-shopping-cart"></i>
+      </div>
+      <div class="feature-body">
+        <h3>Lista zakupów</h3>
+        <p>Składniki ze wszystkich zaplanowanych dań automatycznie trafiają na listę. Grupowane kategoriami, gotowe do odhaczenia.</p>
+      </div>
+      <p-button
+        label="Lista zakupów"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        severity="secondary"
+        [outlined]="true"
+        routerLink="/shopping"
+      />
+    </div>
+
+    <div class="feature-card fade-in">
+      <div class="feature-icon feature-icon--purple">
+        <i class="pi pi-sparkles"></i>
+      </div>
+      <div class="feature-body">
+        <h3>Parsowanie przez AI</h3>
+        <p>Wklej link do przepisu z dowolnej strony. Claude AI wyciągnie składniki, kroki i tagi — bez ręcznego wpisywania.</p>
+      </div>
+      <p-button
+        label="Dodaj przepis"
+        icon="pi pi-plus"
+        iconPos="right"
+        routerLink="/recipes/add"
+      />
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="quick-actions fade-in">
+    <span class="quick-label">Szybki start:</span>
+    <p-button label="Dodaj przepis" icon="pi pi-plus" routerLink="/recipes/add" />
+    <p-button label="Plan tygodnia" icon="pi pi-calendar" severity="secondary" [outlined]="true" routerLink="/planner" />
+    <p-button label="Lista zakupów" icon="pi pi-shopping-cart" severity="secondary" [text]="true" routerLink="/shopping" />
+  </div>
+</div>

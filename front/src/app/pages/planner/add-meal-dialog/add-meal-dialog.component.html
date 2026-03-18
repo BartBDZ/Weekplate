@@ -1,0 +1,174 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  styleClass="add-meal-dialog"
+  [style]="{ width: '520px' }"
+>
+  <ng-template #header>
+    <div class="dialog-header">
+      @if (step() === 1) {
+        <i class="pi pi-calendar-plus" style="font-size:1.2rem"></i>
+        <span>Dodaj danie</span>
+        @if (targetDate) {
+          <span class="date-label">{{ targetDateLabel }}</span>
+        }
+      } @else {
+        <i class="pi pi-shopping-cart" style="font-size:1.2rem"></i>
+        <span>Składniki do listy zakupów</span>
+        <span class="date-label">{{ selectedRecipe()?.name }}</span>
+      }
+    </div>
+  </ng-template>
+
+  <!-- KROK 1: Wybór przepisu -->
+  @if (step() === 1) {
+    <div class="step1">
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          type="text"
+          placeholder="Szukaj przepisu..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="w-full"
+        />
+      </p-iconfield>
+
+      <div class="recipe-list">
+        @if (loading()) {
+          @for (_ of [1,2,3,4]; track $index) {
+            <p-skeleton height="3rem" styleClass="mb-2" />
+          }
+        } @else if (filteredRecipes.length === 0) {
+          <div class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <span>Brak przepisów</span>
+          </div>
+        } @else {
+          @for (recipe of filteredRecipes; track recipe.id) {
+            <div
+              class="recipe-row"
+              [class.selected]="selectedRecipe()?.id === recipe.id"
+              (click)="selectRecipe(recipe)"
+            >
+              @if (recipe.image_url) {
+                <img [src]="recipe.image_url" alt="" class="recipe-thumb" />
+              } @else {
+                <div class="recipe-thumb placeholder">
+                  <i class="pi pi-image"></i>
+                </div>
+              }
+              <span class="recipe-name">{{ recipe.name }}</span>
+              @if (selectedRecipe()?.id === recipe.id) {
+                <i class="pi pi-check-circle selected-icon"></i>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <p-divider />
+
+      <div class="duration-picker">
+        <label>Na ile dni?</label>
+        <div class="duration-buttons">
+          @for (d of [1,2,3,4,5,6,7]; track d) {
+            <button
+              class="duration-btn"
+              [class.active]="durationDays() === d"
+              (click)="durationDays.set(d)"
+            >{{ d }}</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- KROK 2: Lista składników -->
+  @if (step() === 2) {
+    <div class="step2">
+      <div class="step2-actions">
+        <p-button
+          label="Zaznacz wszystko"
+          icon="pi pi-check-square"
+          severity="secondary"
+          size="small"
+          [text]="true"
+          (onClick)="toggleAll(true)"
+        />
+        <p-button
+          label="Odznacz wszystko"
+          icon="pi pi-stop"
+          severity="secondary"
+          size="small"
+          [text]="true"
+          (onClick)="toggleAll(false)"
+        />
+      </div>
+
+      <div class="ingredients-list">
+        @if (loadingIngredients()) {
+          @for (_ of [1,2,3,4,5]; track $index) {
+            <p-skeleton height="2.5rem" styleClass="mb-2" />
+          }
+        } @else if (groupedIngredients.length === 0) {
+          <div class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <span>Brak składników w przepisie</span>
+          </div>
+        } @else {
+          @for (group of groupedIngredients; track group.category) {
+            <div class="ingredient-group">
+              <div class="group-header">
+                <i class="pi pi-tag"></i>
+                {{ group.category }}
+              </div>
+              @for (ing of group.items; track ing.ingredient_id) {
+                <div class="ingredient-row" (click)="toggleIngredient(ing.ingredient_id)">
+                  <p-checkbox
+                    [ngModel]="ing.selected"
+                    [binary]="true"
+                    (onClick)="$event.stopPropagation()"
+                    (ngModelChange)="toggleIngredient(ing.ingredient_id)"
+                  />
+                  <span class="ing-name">{{ ing.name }}</span>
+                  @if (ing.total_quantity) {
+                    <span class="ing-qty">{{ ing.total_quantity }} {{ ing.unit | expandUnit: ing.total_quantity }}</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+
+  <ng-template #footer>
+    @if (step() === 1) {
+      <p-button label="Anuluj" severity="secondary" [text]="true" (onClick)="close()" />
+      <p-button
+        label="Dalej"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        [disabled]="!selectedRecipe()"
+        (onClick)="goToStep2()"
+      />
+    } @else {
+      @if (openedWithPreselection()) {
+        <p-button label="Anuluj" severity="secondary" [text]="true" (onClick)="close()" />
+      } @else {
+        <p-button label="Wróć" icon="pi pi-arrow-left" severity="secondary" [text]="true" (onClick)="goBack()" />
+      }
+      <p-button
+        label="Dodaj do planu"
+        icon="pi pi-check"
+        (onClick)="confirm()"
+      />
+    }
+  </ng-template>
+</p-dialog>

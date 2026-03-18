@@ -1,0 +1,167 @@
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+// Filtry
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.day-select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+
+  label { font-weight: 500; }
+}
+
+.day-dropdown {
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:focus { outline: 2px solid var(--p-primary-color); }
+}
+
+// Loading
+.loading-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// Empty state
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--p-text-muted-color);
+
+  i { font-size: 3.5rem; color: var(--p-primary-200); }
+  h3 { margin: 0; color: var(--p-text-color); }
+  p { margin: 0; font-size: 0.9rem; }
+}
+
+// Lista składników
+.ingredients-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.category-group {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--p-content-background);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: var(--p-content-hover-background);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--p-text-muted-color);
+
+  i { font-size: 0.9rem; }
+}
+
+.category-count {
+  margin-left: auto;
+  background: var(--p-content-border-color);
+  border-radius: 20px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.ingredient-cards {
+  display: flex;
+  flex-direction: column;
+}
+
+.ingredient-card {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--p-content-border-color);
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:first-child { border-top: none; }
+
+  &:hover {
+    background: var(--p-content-hover-background);
+  }
+
+  &.bought {
+    opacity: 0.45;
+
+    .ing-name {
+      text-decoration: line-through;
+    }
+  }
+}
+
+.ing-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.ing-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: opacity 0.15s;
+}
+
+.ing-sources {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ing-qty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.qty-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--p-primary-color);
+}
+
+.qty-unit {
+  font-size: 0.7rem;
+  color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
