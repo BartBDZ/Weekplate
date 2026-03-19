@@ -77,6 +77,19 @@ export class PlannerService {
     return data as MealPlan;
   }
 
+  /** Pobiera wszystkie plany zalogowanego użytkownika */
+  async getAllPlans(): Promise<MealPlan[]> {
+    const userId = this.auth.user()?.id;
+    if (!userId) return [];
+    const { data, error } = await this.db
+      .from('meal_plans')
+      .select('*')
+      .eq('profile_id', userId)
+      .order('week_start', { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as MealPlan[];
+  }
+
   /** Pobiera plan po ID */
   async getPlan(planId: string): Promise<MealPlan> {
     const { data, error } = await this.db
@@ -206,11 +219,21 @@ export class PlannerService {
       `)
       .eq('plan_id', planId);
 
-    if (fromDate) query = query.gte('planned_date', fromDate);
+    // Pobierz tylko dania, które ZACZYNAJĄ się przed lub w dniu toDate
+    // (dania multi-day zaczynające się wcześniej będą odfiltrowane w JS)
     if (toDate) query = query.lte('planned_date', toDate);
 
     const { data, error } = await query;
     if (error) throw error;
+
+    // Filtruj w JS: uwzględnij dania, których zakres [planned_date, planned_date+duration-1] nachodzi na [fromDate, toDate]
+    const items = fromDate
+      ? (data ?? []).filter((item: any) => {
+          const dur = item.duration_days || 1;
+          const end = this.addDays(new Date(item.planned_date + 'T00:00:00'), dur - 1);
+          return this.toDateStr(end) >= fromDate;
+        })
+      : (data ?? []);
 
     // Pobierz zaznaczenia (checked/unchecked)
     const { data: selections } = await this.db
@@ -225,7 +248,7 @@ export class PlannerService {
     // Agreguj składniki
     const aggregated = new Map<string, ShoppingIngredient>();
 
-    for (const item of data ?? []) {
+    for (const item of items) {
       const recipe = (item as any).recipes;
       if (!recipe) continue;
 

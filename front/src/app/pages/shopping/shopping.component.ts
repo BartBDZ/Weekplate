@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -49,6 +49,7 @@ export class ShoppingComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   plan = signal<MealPlan | null>(null);
+  allPlans = signal<MealPlan[]>([]);
   ingredients = signal<ShoppingIngredient[]>([]);
   loading = signal(true);
 
@@ -94,27 +95,44 @@ export class ShoppingComponent implements OnInit {
     const planId = this.route.snapshot.queryParamMap.get('planId');
 
     try {
-      const plan = planId
-        ? await this.plannerService.getPlan(planId)
-        : await this.plannerService.getOrCreatePlan(this.plannerService.getWeekStart());
-      this.plan.set(plan);
+      // Załaduj wszystkie plany użytkownika
+      const allPlans = await this.plannerService.getAllPlans();
+      this.allPlans.set(allPlans);
 
-      // Wygeneruj opcje dni tygodnia na podstawie week_start planu
-      const weekStart = plan.week_start
-        ? new Date(plan.week_start + 'T00:00:00')
-        : this.plannerService.getWeekStart();
-      const days: DayOption[] = [];
-      const dayNames = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
-      for (let i = 0; i < 7; i++) {
-        const d = this.plannerService.addDays(weekStart, i);
-        const str = this.plannerService.toDateStr(d);
-        days.push({
-          label: `${dayNames[i]} (${d.getDate()}.${d.getMonth() + 1})`,
-          value: str,
-        });
+      // Ustal bieżący plan (z query param lub bieżący tydzień)
+      let currentPlan: MealPlan;
+      if (planId) {
+        currentPlan = await this.plannerService.getPlan(planId);
+      } else {
+        currentPlan = await this.plannerService.getOrCreatePlan(this.plannerService.getWeekStart());
       }
+      this.plan.set(currentPlan);
+
+      // Zbierz unikalne daty ze WSZYSTKICH planów
+      const allItemsArrays = await Promise.all(allPlans.map(p => this.plannerService.getItems(p.id)));
+      const dateSet = new Set<string>();
+      for (const items of allItemsArrays) {
+        for (const item of items) {
+          const dur = item.duration_days || 1;
+          const start = new Date(item.planned_date + 'T00:00:00');
+          for (let i = 0; i < dur; i++) {
+            dateSet.add(this.plannerService.toDateStr(this.plannerService.addDays(start, i)));
+          }
+        }
+      }
+
+      // Tylko dziś i przyszłe dni z zaplanowanymi daniami
+      const todayStr = this.plannerService.toDateStr(new Date());
+      const futureDates = Array.from(dateSet).sort().filter(d => d >= todayStr);
+      const days: DayOption[] = futureDates.map(dateStr => {
+        const d = new Date(dateStr + 'T00:00:00');
+        const label = d.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'short' });
+        return { label, value: dateStr };
+      });
       this.dayOptions.set(days);
-      this.selectedDay.set(days[0].value);
+
+      // Domyślnie dziś (jeśli ma dania), inaczej najbliższy przyszły dzień
+      this.selectedDay.set(days[0]?.value ?? '');
 
       await this.loadIngredients();
     } catch {
@@ -133,28 +151,47 @@ export class ShoppingComponent implements OnInit {
   }
 
   private async loadIngredients() {
-    const plan = this.plan();
-    if (!plan) return;
-
     this.loading.set(true);
     try {
-      let fromDate: string | undefined;
-      let toDate: string | undefined;
-
       if (this.filterMode() === 'day') {
-        fromDate = this.selectedDay();
-        toDate = this.selectedDay();
-      }
+        const dateStr = this.selectedDay();
+        if (!dateStr) { this.ingredients.set([]); return; }
 
-      const items = await this.plannerService.getShoppingIngredients(plan.id, fromDate, toDate);
-      this.ingredients.set(items);
+        const plan = this.planForDay(dateStr);
+
+        if (!plan) { this.ingredients.set([]); return; }
+        const items = await this.plannerService.getShoppingIngredients(plan.id, dateStr, dateStr);
+        this.ingredients.set(items);
+      } else {
+        // Wszystkie zakupy — tylko bieżący plan (ten z planId lub bieżący tydzień)
+        const plan = this.plan();
+        if (!plan) { this.ingredients.set([]); return; }
+        const items = await this.plannerService.getShoppingIngredients(plan.id);
+        this.ingredients.set(items);
+      }
     } finally {
       this.loading.set(false);
     }
   }
 
+  private planForDay(dateStr: string): MealPlan | null {
+    return this.allPlans().find(p => {
+      // week covers [week_start, week_start + 6 days]
+      return dateStr >= p.week_start && dateStr <= this.addDays(p.week_start, 6);
+    }) ?? this.plan();
+  }
+
+  private addDays(dateStr: string, days: number): string {
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + days);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   async toggleIngredient(ing: ShoppingIngredient) {
-    const plan = this.plan();
+    const plan = this.filterMode() === 'day' ? this.planForDay(this.selectedDay()) : this.plan();
     if (!plan) return;
 
     const newChecked = !ing.checked;

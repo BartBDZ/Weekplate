@@ -301,6 +301,14 @@ export class PlannerComponent implements OnInit, OnDestroy {
     return this.plannerService.toDateStr(date);
   }
 
+  get surpriseArrowLeft(): string {
+    const state = this.surpriseState();
+    if (!state) return '50%';
+    const idx = this.weekDays().findIndex(d => this.plannerService.toDateStr(d) === state.dateStr);
+    if (idx === -1) return '50%';
+    return `${((idx + 0.5) / 7) * 100}%`;
+  }
+
   get surpriseDayLabel(): string {
     const state = this.surpriseState();
     if (!state) return '';

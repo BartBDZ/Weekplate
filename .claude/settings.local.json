@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(supabase functions:*)",
-      "Bash(npx ng:*)"
+      "Bash(npx ng:*)",
+      "Bash(grep -r \"p-overflow-hidden\\\\|paddingRight\\\\|scrollbar\" c:UsersbartoDocumentsProjektyWeekplatefrontnode_modulesprimengdialog --include=*.js)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

@@ -486,12 +486,12 @@
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16), 0 0 0 4px color-mix(in srgb, var(--p-primary-color) 12%, transparent);
   animation: surprise-bar-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 
-  // triangle pointing up to calendar
+  // triangle pointing up to the clicked day column
   &::before {
     content: '';
     position: absolute;
     top: -9px;
-    left: 50%;
+    left: var(--arrow-left, 50%);
     transform: translateX(-50%);
     border: 9px solid transparent;
     border-bottom-color: var(--p-primary-color);
@@ -503,7 +503,7 @@
     content: '';
     position: absolute;
     top: -6px;
-    left: 50%;
+    left: var(--arrow-left, 50%);
     transform: translateX(-50%);
     border: 7px solid transparent;
     border-bottom-color: var(--p-surface-card);

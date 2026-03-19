@@ -19,6 +19,12 @@ html, body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
+/* PrimeNG adds padding-right = scrollbar width to body on dialog open,
+   but scrollbar-gutter: stable already reserves that space — cancel the double shift */
+body.p-overflow-hidden {
+  padding-right: 0 !important;
+}
+
 h1, h2, h3, h4 {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
