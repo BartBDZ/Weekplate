@@ -36,4 +36,4 @@ git commit -m "Deploy Angular build + assets" -q
 Write-Host "6️⃣ Wypychanie na gh-pages..."
 git push -f origin gh-pages
 
-Write-Host "✅ Deploy zakończony! Strona powinna być dostępna pod: https://BartBDZ.github.io/Weekplate/"
+Write-Host "Deploy finished! The site should be available at: https://BartBDZ.github.io/Weekplate/"
