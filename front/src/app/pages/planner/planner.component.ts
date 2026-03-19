@@ -301,6 +301,13 @@ export class PlannerComponent implements OnInit, OnDestroy {
     return this.plannerService.toDateStr(date);
   }
 
+  get surpriseDayLabel(): string {
+    const state = this.surpriseState();
+    if (!state) return '';
+    const d = new Date(state.dateStr + 'T00:00:00');
+    return d.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+
   // ─── Surprise (Zaskocz mnie) ──────────────────────────────────────────────
 
   pickSurprise(day: Date) {

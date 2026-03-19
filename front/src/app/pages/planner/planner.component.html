@@ -165,44 +165,51 @@
           (dragover)="onGridDragOver($event, day, i)"
           (drop)="onDayDrop($event, day)"
         >
-          @if (surpriseState()?.dateStr === toDateStr(day)) {
-            <!-- Surprise preview card -->
-            <div class="surprise-preview" (click)="$event.stopPropagation()">
-              <div class="surprise-card">
-                @if (surpriseState()!.recipe.image_url) {
-                  <img [src]="surpriseState()!.recipe.image_url" class="surprise-thumb" [alt]="surpriseState()!.recipe.name" />
-                } @else {
-                  <div class="surprise-thumb surprise-thumb--placeholder"><i class="pi pi-book"></i></div>
-                }
-                <span class="surprise-name">{{ surpriseState()!.recipe.name }}</span>
-              </div>
-              <div class="surprise-actions">
-                <button class="surprise-accept" (click)="$event.stopPropagation(); acceptSurprise()">
-                  <i class="pi pi-check"></i> Dodaj
-                </button>
-                <button class="surprise-icon-btn" (click)="$event.stopPropagation(); reshuffleSurprise()" pTooltip="Losuj ponownie" tooltipPosition="top">
-                  <i class="pi pi-refresh"></i>
-                </button>
-                <button class="surprise-icon-btn" (click)="$event.stopPropagation(); surpriseState.set(null)" pTooltip="Anuluj" tooltipPosition="top">
-                  <i class="pi pi-times"></i>
-                </button>
-              </div>
-            </div>
-          } @else {
-            <button class="day-add-btn" (click)="$event.stopPropagation(); onDayClick(day)">
-              <i class="pi pi-plus"></i>
+          <button class="day-add-btn" (click)="$event.stopPropagation(); onDayClick(day)">
+            <i class="pi pi-plus"></i>
+          </button>
+          @if (recentRecipes().length > 0) {
+            <button
+              class="day-surprise-btn"
+              [class.active]="surpriseState()?.dateStr === toDateStr(day)"
+              (click)="$event.stopPropagation(); pickSurprise(day)"
+              pTooltip="Losowe danie z ostatnich przepisów"
+              tooltipPosition="top"
+            >
+              <i class="pi pi-bolt"></i> Zaskocz mnie
             </button>
-            @if (recentRecipes().length > 0) {
-              <button class="day-surprise-btn" (click)="$event.stopPropagation(); pickSurprise(day)" pTooltip="Losowe danie z ostatnich przepisów" tooltipPosition="top">
-                <i class="pi pi-bolt"></i> Zaskocz mnie
-              </button>
-            }
           }
         </div>
       }
 
     </div>
   </div>
+
+  <!-- Surprise bar (floating below calendar) -->
+  @if (surpriseState()) {
+    <div class="surprise-bar" (click)="$event.stopPropagation()">
+      @if (surpriseState()!.recipe.image_url) {
+        <img [src]="surpriseState()!.recipe.image_url" class="surprise-bar-img" [alt]="surpriseState()!.recipe.name" />
+      } @else {
+        <div class="surprise-bar-img surprise-bar-img--placeholder"><i class="pi pi-book"></i></div>
+      }
+      <div class="surprise-bar-info">
+        <span class="surprise-bar-day">{{ surpriseDayLabel }}</span>
+        <span class="surprise-bar-name">{{ surpriseState()!.recipe.name }}</span>
+      </div>
+      <div class="surprise-bar-actions">
+        <button class="surprise-bar-accept" (click)="acceptSurprise()">
+          <i class="pi pi-check"></i> Dodaj do planu
+        </button>
+        <button class="surprise-bar-icon-btn" (click)="reshuffleSurprise()" pTooltip="Losuj ponownie" tooltipPosition="top">
+          <i class="pi pi-refresh"></i>
+        </button>
+        <button class="surprise-bar-icon-btn" (click)="surpriseState.set(null)" pTooltip="Anuluj" tooltipPosition="top">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+    </div>
+  }
 
   <!-- Bottom recipe sections -->
   <div class="bottom-sections">
